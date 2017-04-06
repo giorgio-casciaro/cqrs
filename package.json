@@ -6,14 +6,12 @@
   "scripts": {
     "start": "npm --silent run-script watch_test",
     "watch_test_single": "nodemon --ext js ./test/tests.js",
-    "pm2_watch_test": "pm2 start pm2.js --only worker-app ",
-    "watch_test_b": "nodemon  --ext js --exec \"clear && printf '\\e[3J' && tap testServicesNet/base.test.js --cov --color --reporter=spec || true\"",
     "watch_test": "nodemon  --ext js --exec \"clear && printf '\\e[3J' && tap tests/*.test.js --cov --color --reporter=spec || true\"",
     "watch_debug_b": "nodemon  --ext js  --cov --exec \"clear && printf '\\e[3J' && node --inspect   testServicesNet/base.test.js || true\"",
     "watch_debug_t": "nodemon  --ext js  --cov --exec \"clear && printf '\\e[3J' && node --inspect   tests/transports.test.js || true\""
   },
   "devDependencies": {
-    "babel-cli": "^6.18.0",
+    "babel-cli": "^6.23.0",
     "babel-plugin-syntax-async-functions": "^6.13.0",
     "babel-plugin-transform-regenerator": "^6.21.0",
     "babel-polyfill": "^6.20.0",
@@ -23,7 +21,6 @@
     "tap": "^7.1.2"
   },
   "dependencies": {
-    "babel-cli": "^6.23.0",
     "babel-polyfill": "^6.23.0",
     "ramda": "^0.23.0",
     "shorthash": "0.0.2",

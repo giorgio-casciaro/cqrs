@@ -3,8 +3,8 @@ var path = require('path')
 
 var fs = require('fs')
 const PACKAGE = 'mutations.cqrs'
-const checkRequired = require('./jesus').checkRequired
-var checkRequiredFiles = require('./jesus').checkRequiredFiles
+const checkRequired = require('./utils').checkRequired
+var checkRequiredFiles = require('./utils').checkRequiredFiles
 const uuidV4 = require('uuid/v4')
 
 function getMutationsFunctions (basePath) {
@@ -29,7 +29,7 @@ function checkMutationFunction (mutationId, mutationsFunctions) {
 function generateId () { return uuidV4() }
 module.exports = function getMutationsCqrsPackage ({getConsole, serviceName = 'unknow', serviceId = 'unknow', mutationsPath}) {
   var CONSOLE = getConsole(serviceName, serviceId, PACKAGE)
-  var errorThrow = require('./jesus').errorThrow(serviceName, serviceId, PACKAGE)
+  var errorThrow = require('./utils').errorThrow(serviceName, serviceId, PACKAGE)
 
   var applyMutationsFromPath = function applyMutationsFromPathFunc (originalState, mutations, mutationsPath) {
     var state = R.clone(originalState)

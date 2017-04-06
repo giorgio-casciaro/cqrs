@@ -10,12 +10,11 @@ var R = require('ramda')
 var t = require('tap')
 var path = require('path')
 
-var jesus = require('../jesus')
 var meta = {
   corrid: 'testRequest',
   userid: 'testUser'
 }
-const getConsole = (serviceName, serviceId, pack) => jesus.getConsole({error: true, debug: true, log: true, warn: true}, serviceName, serviceId, pack)
+const getConsole = (serviceName, serviceId, pack) => require("../utils").getConsole({error: true, debug: true, log: true, warn: true}, serviceName, serviceId, pack)
 var CONSOLE = getConsole('BASE TEST', '----', '-----')
 
 var mutationsCqrs = require('../mutations.cqrs')({getConsole, mutationsPath: path.join(__dirname, 'mutations')})
