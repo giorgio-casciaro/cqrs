@@ -1,6 +1,6 @@
 {
   "name": "sint-bit-cqrs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "cqrs lib",
   "author": "Giorgio Casciaro <giorgio.casciaro@gmail.com>",
   "scripts": {
