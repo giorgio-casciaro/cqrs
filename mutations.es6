@@ -6,6 +6,7 @@ const PACKAGE = 'mutations.cqrs'
 const checkRequired = require('./utils').checkRequired
 var checkRequiredFiles = require('./utils').checkRequiredFiles
 const uuidV4 = require('uuid/v4')
+const getConsole = (serviceName, serviceId, pack) => require('./utils').getConsole({error: true, debug: true, log: true, warn: true}, serviceName, serviceId, pack)
 
 function getMutationsFunctions (basePath) {
   var filesJsNoExtension = R.map(R.compose(R.replace('.js', ''), path.basename), R.filter((file) => path.extname(file) === '.js', fs.readdirSync(basePath)))
@@ -27,7 +28,7 @@ function checkMutationFunction (mutationId, mutationsFunctions) {
 }
 
 function generateId () { return uuidV4() }
-module.exports = function getMutationsCqrsPackage ({getConsole, serviceName = 'unknow', serviceId = 'unknow', mutationsPath}) {
+module.exports = function getMutationsCqrsPackage ({serviceName = 'unknow', serviceId = 'unknow', mutationsPath}) {
   var CONSOLE = getConsole(serviceName, serviceId, PACKAGE)
   var errorThrow = require('./utils').errorThrow(serviceName, serviceId, PACKAGE)
 
@@ -58,7 +59,7 @@ module.exports = function getMutationsCqrsPackage ({getConsole, serviceName = 'u
             mutation,
             meta,
             version: lastMutationVersion,
-            timestamp: new Date().getTime() / 1000,
+            timestamp: new Date().getTime(),
             data
           }
           CONSOLE.debug('dataSingleMutation to create', {mutation, lastMutationVersion, objId, data, mutationState})
@@ -67,12 +68,12 @@ module.exports = function getMutationsCqrsPackage ({getConsole, serviceName = 'u
           errorThrow('mutate(args) Error', {error, mutation, objId, data})
         }
       },
-      applyMutations: async function applyMutations ({state, mutations}) {
+      applyMutations: function applyMutations (state, mutations) {
         CONSOLE.debug('applyMutationsFromPath', {state, mutations, mutationsPath})
         return applyMutationsFromPath(state, mutations, mutationsPath)
       }
     }
   } catch (error) {
-    errorThrow('getMutationsCqrsPackage', {error, mutationsPath, mutationsStoragePackage})
+    errorThrow('getMutationsCqrsPackage', {error, mutationsPath})
   }
 }

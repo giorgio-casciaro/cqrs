@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "cqrs lib",
   "author": "Giorgio Casciaro <giorgio.casciaro@gmail.com>",
+  "main": "views.js",
   "scripts": {
     "start": "npm --silent run-script watch_test",
     "watch_test_single": "nodemon --ext js ./test/tests.js",

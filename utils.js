@@ -1,7 +1,12 @@
 const R = require('ramda')
 const fs = require('fs')
 const path = require('path')
+const PACKAGE = 'jesus'
 
+const stringToColor = (string) => {
+  var value = string.split('').map((char) => char.charCodeAt(0) * 2).reduce((a, b) => a + b, 0)
+  return `hsl(${(value) % 255},80%,30%)`
+}
 var getConsoleInitTime = Date.now()
 
 function getConsole (config = {debug: false, log: true, error: true, warn: true}, serviceName, serviceId, pack, logDir = false) {

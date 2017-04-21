@@ -5,12 +5,14 @@ var shorthash = require('shorthash').unique
 // var jesus = require('./jesus')
 const PACKAGE = 'views.cqrs'
 const checkRequired = require('./utils').checkRequired
+const getConsole = (serviceName, serviceId, pack) => require('./utils').getConsole({error: true, debug: true, log: true, warn: true}, serviceName, serviceId, pack)
 
-module.exports = function getViewsCqrsPackage ({getConsole, serviceName="unknow", serviceId="unknow", snapshotsMaxMutations = 10, getObjMutations, applyMutations}) {
+module.exports = function getViewsCqrsPackage ({ serviceName="unknow", serviceId="unknow", snapshotsMaxMutations = 10}) {
   var CONSOLE = getConsole(serviceName, serviceId, PACKAGE)
   var errorThrow = require('./utils').errorThrow(serviceName, serviceId, PACKAGE)
+  //getObjMutations, applyMutations
   try {
-    checkRequired({ getConsole, getObjMutations, applyMutations})
+    checkRequired({ })
     async function updateView ({objId, lastSnapshot = {timestamp: 0, state: {}}, loadMutations = true, addMutations = []}) {
       try {
         // COLLECT MUTATIONS AND UPDATE VIEW
