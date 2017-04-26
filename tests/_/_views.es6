@@ -22,7 +22,7 @@ module.exports = function getViewsCqrsPackage ({ serviceName="unknow", serviceId
         CONSOLE.debug('loaded Mutations', {mutations })
         mutations = mutations.concat(addMutations)
         CONSOLE.debug('total Mutations', {mutations })
-        mutations = R.uniqBy(R.prop('_id'), mutations)
+        mutations = R.uniqBy(R.prop('id'), mutations)
         CONSOLE.debug('filtered Mutations', {mutations })
         var updatedView = await applyMutations({state: lastSnapshot.state, mutations})
 

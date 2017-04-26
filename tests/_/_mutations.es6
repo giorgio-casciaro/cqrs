@@ -55,7 +55,7 @@ module.exports = function getMutationsCqrsPackage ({serviceName = 'unknow', serv
           var lastMutationVersion = mutationsFunctions[mutation][0].mutationVersion
           var mutationState = {
             objId: objId,
-            _id: generateId(),
+            id: generateId(),
             mutation,
             meta,
             version: lastMutationVersion,
