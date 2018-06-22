@@ -1,12 +1,15 @@
 var R = require('ramda')
 var path = require('path')
 
+const log = (msg, data) => { console.log('\n' + JSON.stringify(['LOG', 'CQRS MUTATIONS', msg, data])) }
+const debug = (msg, data) => { console.log('\n' + JSON.stringify(['DEBUG', 'CQRS MUTATIONS', msg, data])) }
+const error = (msg, data) => { console.log('\n' + JSON.stringify(['ERROR', 'CQRS MUTATIONS', msg, data])) }
+
 var fs = require('fs')
 const PACKAGE = 'mutations.cqrs'
 const checkRequired = require('./utils').checkRequired
 var checkRequiredFiles = require('./utils').checkRequiredFiles
 const uuidV4 = require('uuid/v4')
-const getConsole = (serviceName, serviceId, pack) => require('./utils').getConsole({error: true, debug: true, log: true, warn: true}, serviceName, serviceId, pack)
 
 function getMutationsFunctions (basePath) {
   var filesJsNoExtension = R.map(R.compose(R.replace('.js', ''), path.basename), R.filter((file) => path.extname(file) === '.js', fs.readdirSync(basePath)))
@@ -23,21 +26,20 @@ function getMutationsFunctions (basePath) {
 
 function checkMutationFunction (mutationId, mutationsFunctions) {
   if (!mutationsFunctions[mutationId] || !mutationsFunctions[mutationId][0]) {
-    errorThrow('mutation not defined', {mutationId})
+    throw new Error('mutation not defined ' + mutationId)
   }
 }
 
 function generateId () { return uuidV4() }
 module.exports = function getMutationsCqrsPackage ({serviceName = 'unknow', serviceId = 'unknow', mutationsPath}) {
-  var CONSOLE = getConsole(serviceName, serviceId, PACKAGE)
   var errorThrow = require('./utils').errorThrow(serviceName, serviceId, PACKAGE)
 
   var applyMutationsFromPath = function applyMutationsFromPathFunc (originalState, mutations, mutationsPath) {
     var state = R.clone(originalState)
-    CONSOLE.debug('applyMutationsFromPath', {state, mutations, mutationsPath})
+    debug('applyMutationsFromPath', {state, mutations, mutationsPath})
     function applyMutation (state, mutation) {
       var mutationFile = path.join(mutationsPath, `${mutation.mutation}.${mutation.version}.js`)
-      CONSOLE.debug('applyMutation', {mutationFile, state, data: mutation.data})
+      debug('applyMutation', {mutationFile, state, data: mutation.data})
       return require(mutationFile)(state, mutation.data)
     }
     return R.reduce(applyMutation, state, mutations)
@@ -62,14 +64,14 @@ module.exports = function getMutationsCqrsPackage ({serviceName = 'unknow', serv
             timestamp: new Date().getTime(),
             data
           }
-          CONSOLE.debug('dataSingleMutation to create', {mutation, lastMutationVersion, objId, data, mutationState})
+          debug('dataSingleMutation to create', {mutation, lastMutationVersion, objId, data, mutationState})
           return mutationState
         } catch (error) {
           errorThrow('mutate(args) Error', {error, mutation, objId, data})
         }
       },
       applyMutations: function applyMutations (state, mutations) {
-        CONSOLE.debug('applyMutationsFromPath', {state, mutations, mutationsPath})
+        debug('applyMutationsFromPath', {state, mutations, mutationsPath})
         return applyMutationsFromPath(state, mutations, mutationsPath)
       }
     }
