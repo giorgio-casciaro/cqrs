@@ -11,19 +11,6 @@ const checkRequired = require('./utils').checkRequired
 var checkRequiredFiles = require('./utils').checkRequiredFiles
 const uuidV4 = require('uuid/v4')
 
-function getMutationsFunctions (basePath) {
-  var filesJsNoExtension = R.map(R.compose(R.replace('.js', ''), path.basename), R.filter((file) => path.extname(file) === '.js', fs.readdirSync(basePath)))
-  var splitFiles = R.map(R.split('.'))
-  var sortFiles = R.compose(R.reverse, R.sortBy(R.compose(parseInt, R.prop(0))))
-  var groupFiles = R.groupBy(R.prop(0))
-  var addFunction = R.map(R.map((element) => {
-    return {mutationId: element[0], mutationVersion: element[1]}
-  }))
-  var mutationsFunctions = R.compose(addFunction, groupFiles, sortFiles, splitFiles)(filesJsNoExtension)
-  // debug('getMutationsFunctions', mutationsFunctions)
-  return mutationsFunctions
-}
-
 function checkMutationFunction (mutationId, mutationsFunctions) {
   if (!mutationsFunctions[mutationId] || !mutationsFunctions[mutationId][0]) {
     throw new Error('mutation not defined ' + mutationId)
@@ -34,13 +21,26 @@ function generateId () { return uuidV4() }
 module.exports = function getMutationsCqrsPackage ({serviceName = 'unknow', serviceId = 'unknow', mutationsPath}) {
   var errorThrow = require('./utils').errorThrow(serviceName, serviceId, PACKAGE)
 
+  function getMutationsFunctions (basePath) {
+    var filesJsNoExtension = R.map(R.compose(R.replace('.js', ''), path.basename), R.filter((file) => path.extname(file) === '.js', fs.readdirSync(basePath)))
+    var splitFiles = R.map(R.split('.'))
+    var sortFiles = R.compose(R.reverse, R.sortBy(R.compose(parseInt, R.prop(0))))
+    var groupFiles = R.groupBy(R.prop(0))
+    var addFunction = R.map(R.map((element) => {
+      return {mutationId: element[0], mutationVersion: element[1], mutationInfo: require(path.join(mutationsPath, `${element[0]}.${element[1]}.js`))}
+    }))
+    var mutationsFunctions = R.compose(addFunction, groupFiles, sortFiles, splitFiles)(filesJsNoExtension)
+    // debug('getMutationsFunctions', mutationsFunctions)
+    return mutationsFunctions
+  }
+
   var applyMutationsFromPath = function applyMutationsFromPathFunc (originalState, mutations, mutationsPath) {
     var state = R.clone(originalState)
     debug('applyMutationsFromPath', {state, mutations, mutationsPath})
     function applyMutation (state, mutation) {
       var mutationFile = path.join(mutationsPath, `${mutation.mutation}.${mutation.version}.js`)
       debug('applyMutation', {mutationFile, state, data: mutation.data})
-      return require(mutationFile)(state, mutation.data)
+      return require(mutationFile).exec(state, mutation.data)
     }
     return R.reduce(applyMutation, state, mutations)
   }
@@ -48,13 +48,14 @@ module.exports = function getMutationsCqrsPackage ({serviceName = 'unknow', serv
   try {
     checkRequired({mutationsPath}, PACKAGE)
     checkRequiredFiles([mutationsPath], PACKAGE)
+    var mutationsFunctions = getMutationsFunctions(mutationsPath)
     return {
       mutate: function mutate ({mutation, objId, data, meta}) {
         try {
           checkRequired({meta, data, objId, mutation}, PACKAGE)
-          var mutationsFunctions = getMutationsFunctions(mutationsPath)
           checkMutationFunction(mutation, mutationsFunctions)
           var lastMutationVersion = mutationsFunctions[mutation][0].mutationVersion
+          var lastMutationInfo = mutationsFunctions[mutation][0].mutationInfo
           var mutationState = {
             objId: objId,
             id: generateId(),
@@ -73,6 +74,14 @@ module.exports = function getMutationsCqrsPackage ({serviceName = 'unknow', serv
       applyMutations: function applyMutations (state, mutations) {
         debug('applyMutationsFromPath', {state, mutations, mutationsPath})
         return applyMutationsFromPath(state, mutations, mutationsPath)
+      },
+      getMutationsInfo: function getMutationsInfo () {
+        log('getMutationsInfo mutationsFunctions', mutationsFunctions)
+        var mutationsInfo = {}
+        for (var i in mutationsFunctions) {
+          mutationsInfo[i] = mutationsFunctions[i][0].mutationInfo
+        }
+        return mutationsInfo
       }
     }
   } catch (error) {
